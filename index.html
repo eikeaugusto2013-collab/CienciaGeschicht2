@@ -22,7 +22,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
   }
 
   .card {
@@ -33,15 +33,10 @@
     text-align: center;
     user-select: none;
     padding: 10px;
-    transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
+    transition: transform 0.2s;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     border: 3px solid transparent;
-    cursor: pointer;
-  }
-
-  .card.selecionado {
-    border: 3px solid yellow;
-    transform: scale(1.05);
+    touch-action: none;
   }
 
   .frame {
@@ -81,10 +76,6 @@
     cursor: pointer;
   }
 
-  button:hover {
-    background: #45a049;
-  }
-
   #resultado {
     text-align: center;
     font-size: 18px;
@@ -92,7 +83,7 @@
     font-weight: bold;
   }
 
-  /* Responsivo */
+  /* Versão mobile */
   @media (max-width: 600px) {
     .card {
       width: 120px;
@@ -100,7 +91,6 @@
     }
     .frame {
       height: 100px;
-      border-width: 2px;
     }
     p {
       font-size: 11px;
@@ -108,10 +98,6 @@
     h1 {
       font-size: 18px;
       margin: 10px 0;
-    }
-    button {
-      font-size: 14px;
-      padding: 8px 20px;
     }
   }
 </style>
@@ -168,28 +154,43 @@ window.onload = function() {
     container.appendChild(div);
   });
 
-  // Clique para selecionar e trocar
-  let selecionado = null;
+  // Arrastar e soltar - compatível com toque
+  let dragged = null;
+  let touchStartCard = null;
 
-  container.addEventListener('click', e => {
-    const card = e.target.closest('.card');
-    if (!card) return;
+  container.addEventListener('dragstart', e => {
+    dragged = e.target.closest('.card');
+  });
 
-    if (!selecionado) {
-      selecionado = card;
-      card.classList.add('selecionado');
-    } else if (selecionado === card) {
-      selecionado.classList.remove('selecionado');
-      selecionado = null;
-    } else {
-      // Troca o conteúdo
-      const tempHTML = selecionado.innerHTML;
-      selecionado.innerHTML = card.innerHTML;
-      card.innerHTML = tempHTML;
-      selecionado.classList.remove('selecionado');
-      selecionado = null;
+  container.addEventListener('dragover', e => e.preventDefault());
+
+  container.addEventListener('drop', e => {
+    e.preventDefault();
+    const target = e.target.closest('.card');
+    if (dragged && target && dragged !== target) {
+      trocarConteudo(dragged, target);
     }
   });
+
+  // Suporte a toque no celular
+  container.addEventListener('touchstart', e => {
+    const card = e.target.closest('.card');
+    touchStartCard = card;
+  });
+
+  container.addEventListener('touchend', e => {
+    const card = e.target.closest('.card');
+    if (touchStartCard && card && touchStartCard !== card) {
+      trocarConteudo(touchStartCard, card);
+    }
+    touchStartCard = null;
+  });
+
+  function trocarConteudo(c1, c2) {
+    const temp = c1.innerHTML;
+    c1.innerHTML = c2.innerHTML;
+    c2.innerHTML = temp;
+  }
 
   window.verificarOrdem = function() {
     let cards = document.querySelectorAll('.card p');
