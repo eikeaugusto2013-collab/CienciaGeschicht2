@@ -33,14 +33,15 @@
     text-align: center;
     user-select: none;
     padding: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, border 0.2s;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    touch-action: none;
+    border: 3px solid transparent;
+    cursor: pointer;
   }
 
-  .card:active {
+  .card.selecionado {
+    border: 3px solid yellow;
     transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
   }
 
   .frame {
@@ -96,7 +97,6 @@
     .card {
       width: 120px;
       padding: 6px;
-      border-radius: 10px;
     }
     .frame {
       height: 100px;
@@ -168,26 +168,27 @@ window.onload = function() {
     container.appendChild(div);
   });
 
-  // Sistema simples de troca por toque (sem arrastar)
+  // Clique para selecionar e trocar
   let selecionado = null;
 
-  document.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('click', () => {
-      if (!selecionado) {
-        selecionado = card;
-        card.style.border = "4px solid yellow";
-      } else if (selecionado === card) {
-        selecionado.style.border = "";
-        selecionado = null;
-      } else {
-        // Troca o conteúdo dos dois cards
-        const temp = selecionado.innerHTML;
-        selecionado.innerHTML = card.innerHTML;
-        card.innerHTML = temp;
-        selecionado.style.border = "";
-        selecionado = null;
-      }
-    });
+  container.addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+
+    if (!selecionado) {
+      selecionado = card;
+      card.classList.add('selecionado');
+    } else if (selecionado === card) {
+      selecionado.classList.remove('selecionado');
+      selecionado = null;
+    } else {
+      // Troca o conteúdo
+      const tempHTML = selecionado.innerHTML;
+      selecionado.innerHTML = card.innerHTML;
+      card.innerHTML = tempHTML;
+      selecionado.classList.remove('selecionado');
+      selecionado = null;
+    }
   });
 
   window.verificarOrdem = function() {
