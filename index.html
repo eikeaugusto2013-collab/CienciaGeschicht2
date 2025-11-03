@@ -5,28 +5,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Ordene os Presidentes do Brasil</title>
 <style>
-  body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-  h1 { text-align: center; }
-  #cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-  .card { 
-    background: #1E90FF; color: white; border-radius: 10px; width: 200px;
-    text-align: center; cursor: grab; user-select: none;
-    padding: 10px; transition: transform 0.2s; 
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    background: #e9ecef;
   }
-  .card img {
+
+  h1 {
+    text-align: center;
+    margin-bottom: 25px;
+  }
+
+  #cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .card {
+    background: #1E90FF;
+    color: white;
+    border-radius: 15px;
+    width: 210px;
+    text-align: center;
+    cursor: grab;
+    user-select: none;
+    padding: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  }
+
+  .frame {
     width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 8px;
+    height: 200px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
     margin-bottom: 8px;
-    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .card:hover { transform: scale(1.05); }
-  button { display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px; }
-  #resultado { text-align: center; font-size: 18px; margin-top: 10px; font-weight: bold; }
-  .missing { 
-    width: 100%; height: 180px; display:flex; align-items:center; justify-content:center;
-    background:#ccc; color:#333; border-radius:8px; margin-bottom:8px; font-size:14px;
+
+  .frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  button {
+    display: block;
+    margin: 25px auto;
+    padding: 10px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  #resultado {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 10px;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -55,7 +110,6 @@ window.onload = function() {
 
   const cores = ["#1E90FF","#4CAF50"];
   let embaralhados = [...presidentes].sort(() => 0.5 - Math.random());
-
   const container = document.getElementById('cards');
   container.innerHTML = "";
 
@@ -65,37 +119,21 @@ window.onload = function() {
     div.draggable = true;
     div.id = 'card-' + i;
 
-    // posição histórica (1..38)
-    const posHistorica = presidentes.indexOf(nome) + 1; // +1 porque indexOf é 0-based
+    const pos = presidentes.indexOf(nome) + 1;
 
-    // img element
+    const frame = document.createElement('div');
+    frame.className = 'frame';
+
     const img = document.createElement('img');
+    img.src = pos + ".webp";
     img.alt = nome;
-    // tentar carregar N.JPG primeiro (ex: "35.JPG"), se falhar tenta "N.webp", se falhar mostra bloco "missing"
-    img.src = posHistorica + ".JPG";
-
-    // ao erro, tenta .webp; se também falhar, esconde a <img> e mostra placeholder
-    img.onerror = function() {
-      // se já tentamos .JPG e falhou, tente .webp uma vez
-      if (!this.dataset.triedWebp) {
-        this.dataset.triedWebp = "1";
-        this.src = posHistorica + ".webp";
-      } else {
-        // já tentou .webp também; substituir por placeholder visual
-        this.style.display = 'none';
-        const placeholder = document.createElement('div');
-        placeholder.className = 'missing';
-        placeholder.innerText = `Imagem ${posHistorica}.(jpg/webp) não encontrada`;
-        this.parentNode.insertBefore(placeholder, this);
-      }
-    };
+    frame.appendChild(img);
 
     const p = document.createElement('p');
     p.innerText = nome;
 
-    div.appendChild(img);
+    div.appendChild(frame);
     div.appendChild(p);
-
     div.style.backgroundColor = cores[i % cores.length];
 
     div.addEventListener('dragstart', dragStart);
@@ -112,7 +150,7 @@ window.onload = function() {
   function drop(e) {
     e.preventDefault();
     const alvo = e.target.closest('.card');
-    if(dragged && alvo && dragged !== alvo){
+    if (dragged && alvo && dragged !== alvo) {
       const temp = alvo.innerHTML;
       alvo.innerHTML = dragged.innerHTML;
       dragged.innerHTML = temp;
@@ -133,3 +171,4 @@ window.onload = function() {
 
 </body>
 </html>
+
