@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ordene os Presidentes do Brasil</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+  h1 { text-align: center; }
+  #cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .card { 
+    background: #1E90FF; color: white; border-radius: 10px; width: 200px;
+    text-align: center; cursor: grab; user-select: none;
+    padding: 10px; transition: transform 0.2s; 
+  }
+  .card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #ddd;
+  }
+  .card:hover { transform: scale(1.05); }
+  button { display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px; }
+  #resultado { text-align: center; font-size: 18px; margin-top: 10px; font-weight: bold; }
+  .missing { 
+    width: 100%; height: 180px; display:flex; align-items:center; justify-content:center;
+    background:#ccc; color:#333; border-radius:8px; margin-bottom:8px; font-size:14px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Ordene os Presidentes do Brasil</h1>
+<div id="cards"></div>
+<button onclick="verificarOrdem()">Verificar Ordem</button>
+<div id="resultado"></div>
+
+<script>
+window.onload = function() {
+  const presidentes = [
+    "Manuel Deodoro da Fonseca","Floriano Peixoto","Prudente José de Morais",
+    "Manuel Ferraz de Campos Sales","Francisco de Paula Rodrigues Alves","Afonso Augusto Moreira Pena",
+    "Nilo Procópio Peçanha","Hermes Rodrigues da Fonseca","Venceslau Brás Pereira Gomes",
+    "Delfim Moreira da Costa Ribeiro","Epitácio Lindolfo da Silva Pessoa","Artur da Silva Bernardes",
+    "Washington Luís Pereira de Sousa","Getúlio Dornelles Vargas (1930–1945)","José Linhares",
+    "Eurico Gaspar Dutra","Getúlio Dornelles Vargas (1951–1954)","Café Filho","Carlos Luz","Nereu Ramos",
+    "Juscelino Kubitschek de Oliveira","Jânio Quadros","João Goulart","Ranieri Mazzilli",
+    "Castelo Branco","Artur da Costa e Silva","Emílio Garrastazu Médici","Ernesto Geisel",
+    "João Batista Figueiredo","José Sarney","Fernando Collor de Mello","Itamar Franco",
+    "Fernando Henrique Cardoso","Luiz Inácio Lula da Silva (2003–2010)","Dilma Rousseff",
+    "Michel Temer","Jair Bolsonaro","Luiz Inácio Lula da Silva (2023–…)"
+  ];
+
+  const cores = ["#1E90FF","#4CAF50"];
+  let embaralhados = [...presidentes].sort(() => 0.5 - Math.random());
+
+  const container = document.getElementById('cards');
+  container.innerHTML = "";
+
+  embaralhados.forEach((nome, i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.draggable = true;
+    div.id = 'card-' + i;
+
+    // posição histórica (1..38)
+    const posHistorica = presidentes.indexOf(nome) + 1; // +1 porque indexOf é 0-based
+
+    // img element
+    const img = document.createElement('img');
+    img.alt = nome;
+    // tentar carregar N.JPG primeiro (ex: "35.JPG"), se falhar tenta "N.webp", se falhar mostra bloco "missing"
+    img.src = posHistorica + ".JPG";
+
+    // ao erro, tenta .webp; se também falhar, esconde a <img> e mostra placeholder
+    img.onerror = function() {
+      // se já tentamos .JPG e falhou, tente .webp uma vez
+      if (!this.dataset.triedWebp) {
+        this.dataset.triedWebp = "1";
+        this.src = posHistorica + ".webp";
+      } else {
+        // já tentou .webp também; substituir por placeholder visual
+        this.style.display = 'none';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'missing';
+        placeholder.innerText = `Imagem ${posHistorica}.(jpg/webp) não encontrada`;
+        this.parentNode.insertBefore(placeholder, this);
+      }
+    };
+
+    const p = document.createElement('p');
+    p.innerText = nome;
+
+    div.appendChild(img);
+    div.appendChild(p);
+
+    div.style.backgroundColor = cores[i % cores.length];
+
+    div.addEventListener('dragstart', dragStart);
+    div.addEventListener('dragover', dragOver);
+    div.addEventListener('drop', drop);
+
+    container.appendChild(div);
+  });
+
+  let dragged;
+
+  function dragStart(e) { dragged = e.target.closest('.card'); }
+  function dragOver(e) { e.preventDefault(); }
+  function drop(e) {
+    e.preventDefault();
+    const alvo = e.target.closest('.card');
+    if(dragged && alvo && dragged !== alvo){
+      const temp = alvo.innerHTML;
+      alvo.innerHTML = dragged.innerHTML;
+      dragged.innerHTML = temp;
+    }
+  }
+
+  window.verificarOrdem = function() {
+    let cards = document.querySelectorAll('.card p');
+    let pontos = 0;
+    cards.forEach((card, index)=>{
+      if(card.innerText === presidentes[index]) pontos++;
+    });
+    document.getElementById('resultado').innerText = 
+      `Você acertou ${pontos} de ${presidentes.length} presidentes`;
+  }
+}
+</script>
+
+</body>
+</html>
