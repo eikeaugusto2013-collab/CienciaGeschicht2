@@ -7,49 +7,51 @@
 <style>
   body {
     font-family: sans-serif;
-    padding: 20px;
+    padding: 10px;
     background: #e9ecef;
+    margin: 0;
   }
 
   h1 {
     text-align: center;
-    margin-bottom: 25px;
+    margin: 15px 0;
+    font-size: 22px;
   }
 
   #cards {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 15px;
+    gap: 12px;
   }
 
   .card {
     background: #1E90FF;
     color: white;
-    border-radius: 15px;
-    width: 210px;
+    border-radius: 12px;
+    width: 180px;
     text-align: center;
-    cursor: grab;
     user-select: none;
-    padding: 12px;
+    padding: 10px;
     transition: transform 0.2s, box-shadow 0.2s;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    touch-action: none;
   }
 
-  .card:hover {
+  .card:active {
     transform: scale(1.05);
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
   }
 
   .frame {
     width: 100%;
-    height: 200px;
+    height: 160px;
     background: white;
     border-radius: 10px;
     overflow: hidden;
-    border: 4px solid #fff;
+    border: 3px solid #fff;
     box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,9 +63,14 @@
     object-fit: cover;
   }
 
+  p {
+    font-size: 14px;
+    margin: 5px 0 0;
+  }
+
   button {
     display: block;
-    margin: 25px auto;
+    margin: 20px auto;
     padding: 10px 25px;
     font-size: 16px;
     border: none;
@@ -82,6 +89,18 @@
     font-size: 18px;
     margin-top: 10px;
     font-weight: bold;
+  }
+
+  /* Responsivo */
+  @media (max-width: 600px) {
+    .card {
+      width: 45%;
+      padding: 8px;
+    }
+    .frame {
+      height: 130px;
+    }
+    h1 { font-size: 18px; }
   }
 </style>
 </head>
@@ -116,8 +135,7 @@ window.onload = function() {
   embaralhados.forEach((nome, i) => {
     const div = document.createElement('div');
     div.className = 'card';
-    div.draggable = true;
-    div.id = 'card-' + i;
+    div.dataset.nome = nome;
 
     const pos = presidentes.indexOf(nome) + 1;
 
@@ -135,27 +153,43 @@ window.onload = function() {
     div.appendChild(frame);
     div.appendChild(p);
     div.style.backgroundColor = cores[i % cores.length];
-
-    div.addEventListener('dragstart', dragStart);
-    div.addEventListener('dragover', dragOver);
-    div.addEventListener('drop', drop);
-
     container.appendChild(div);
   });
 
-  let dragged;
+  // Suporte a toque e mouse
+  let dragged = null;
 
-  function dragStart(e) { dragged = e.target.closest('.card'); }
-  function dragOver(e) { e.preventDefault(); }
-  function drop(e) {
+  function handleStart(e) {
+    dragged = e.target.closest('.card');
+    dragged.style.opacity = "0.5";
+  }
+
+  function handleEnd(e) {
+    if (dragged) dragged.style.opacity = "1";
+    dragged = null;
+  }
+
+  function handleMove(e) {
     e.preventDefault();
-    const alvo = e.target.closest('.card');
-    if (dragged && alvo && dragged !== alvo) {
-      const temp = alvo.innerHTML;
-      alvo.innerHTML = dragged.innerHTML;
-      dragged.innerHTML = temp;
+    const touch = e.touches ? e.touches[0] : e;
+    const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+    const target = elem ? elem.closest('.card') : null;
+
+    if (dragged && target && target !== dragged) {
+      const draggedHTML = dragged.innerHTML;
+      dragged.innerHTML = target.innerHTML;
+      target.innerHTML = draggedHTML;
     }
   }
+
+  // Adiciona eventos (mouse + toque)
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', handleStart);
+    card.addEventListener('dragend', handleEnd);
+    card.addEventListener('touchstart', handleStart);
+    card.addEventListener('touchmove', handleMove);
+    card.addEventListener('touchend', handleEnd);
+  });
 
   window.verificarOrdem = function() {
     let cards = document.querySelectorAll('.card p');
@@ -163,7 +197,7 @@ window.onload = function() {
     cards.forEach((card, index)=>{
       if(card.innerText === presidentes[index]) pontos++;
     });
-    document.getElementById('resultado').innerText = 
+    document.getElementById('resultado').innerText =
       `Você acertou ${pontos} de ${presidentes.length} presidentes`;
   }
 }
@@ -171,4 +205,3 @@ window.onload = function() {
 
 </body>
 </html>
-
