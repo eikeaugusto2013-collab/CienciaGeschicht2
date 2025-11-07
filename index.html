@@ -109,8 +109,18 @@ window.onload = function() {
   ];
 
   const cores = ["#1E90FF","#4CAF50"];
-  let embaralhados = [...presidentes].sort(() => 0.5 - Math.random());
   const container = document.getElementById('cards');
+
+  // --- FUNÇÃO PARA EMBARALHAR SEM NENHUM PRESIDENTE NA POSIÇÃO CERTA ---
+  function embaralharSemCorretos(lista) {
+    let embaralhado;
+    do {
+      embaralhado = [...lista].sort(() => Math.random() - 0.5);
+    } while (embaralhado.some((item, i) => item === lista[i]));
+    return embaralhado;
+  }
+
+  let embaralhados = embaralharSemCorretos(presidentes);
   container.innerHTML = "";
 
   embaralhados.forEach((nome, i) => {
@@ -145,8 +155,14 @@ window.onload = function() {
 
   let dragged;
 
-  function dragStart(e) { dragged = e.target.closest('.card'); }
-  function dragOver(e) { e.preventDefault(); }
+  function dragStart(e) {
+    dragged = e.target.closest('.card');
+  }
+
+  function dragOver(e) {
+    e.preventDefault();
+  }
+
   function drop(e) {
     e.preventDefault();
     const alvo = e.target.closest('.card');
@@ -160,15 +176,14 @@ window.onload = function() {
   window.verificarOrdem = function() {
     let cards = document.querySelectorAll('.card p');
     let pontos = 0;
-    cards.forEach((card, index)=>{
-      if(card.innerText === presidentes[index]) pontos++;
+    cards.forEach((card, index) => {
+      if (card.innerText === presidentes[index]) pontos++;
     });
-    document.getElementById('resultado').innerText = 
+    document.getElementById('resultado').innerText =
       `Você acertou ${pontos} de ${presidentes.length} presidentes`;
-  }
-}
+  };
+};
 </script>
 
 </body>
 </html>
-
